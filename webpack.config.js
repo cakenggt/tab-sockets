@@ -8,7 +8,9 @@ var config = {
   entry: APP_DIR + '/index.js',
   output: {
     path: BUILD_DIR,
-    filename: 'tab-sockets.min.js'
+    filename: 'tab-sockets.min.js',
+    libraryTarget: 'var',
+    library: 'io'
   },
   module : {
     loaders : [

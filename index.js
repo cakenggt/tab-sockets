@@ -1,5 +1,5 @@
-import 'babel-polyfill'; // eslint-disable-line import/no-unassigned-import
-import uuid from 'uuid';
+require('babel-polyfill'); // eslint-disable-line import/no-unassigned-import
+const uuid = require('uuid');
 
 var tabUUID = uuid.v4();
 
@@ -101,7 +101,8 @@ Socket.prototype.emit = function (type, data) {
 		rooms: this.toRooms || [],
 		data: data,
 		senderid: tabUUID,
-		type: type
+		type: type,
+		nonce: uuid.v4()
 	};
 
 	localStorage.setItem('tab-sockets', JSON.stringify(message));
@@ -125,6 +126,6 @@ flags.forEach(function (flag) {
 	});
 });
 
-export default function (namespace) {
+module.exports = function (namespace) {
 	return new Socket(namespace);
-}
+};
