@@ -55,7 +55,7 @@ This is a flag that you can set on the socket before you emit to prevent the soc
 
 ## Example Usage
 
-```
+```js
 const io = require('tab-sockets');
 
 //Choose the default namespace
