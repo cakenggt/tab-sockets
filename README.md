@@ -1,5 +1,7 @@
 # tab-sockets
 
+[![Build Status][travis-image]][travis-url]
+
 tab-sockets is a library designed to help you make different tabs of the same website communicate together effectively. tab-sockets uses `localStorage` and listeners to achieve this communication, and as such, only works in browsers which support localStorage.
 
 ## Installation
@@ -85,3 +87,6 @@ Make sure your code is in the [xo](https://github.com/sindresorhus/xo) style. On
 Run `npm test` to generate a new minified file, which tests will be run against.
 
 Run `npm run build` to only build a new minified file.
+
+[travis-image]: https://travis-ci.org/cakenggt/tab-sockets.svg?branch=master
+[travis-url]: https://travis-ci.org/cakenggt/tab-sockets#
