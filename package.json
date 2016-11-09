@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "build": "webpack -p",
-    "test": "xo"
+    "test": "xo && webpack -p && mocha"
   },
   "keywords": [
     "cross-tab"
@@ -17,6 +17,11 @@
     "babel-loader": "^6.2.7",
     "babel-polyfill": "^6.16.0",
     "babel-preset-es2015": "^6.18.0",
+    "chai": "^3.5.0",
+    "file-url": "^1.1.0",
+    "mocha": "^3.1.2",
+    "node-horseman": "^3.2.0",
+    "phantomjs-prebuilt": "^2.1.13",
     "webpack": "^1.13.3",
     "xo": "^0.17.0"
   },
