@@ -32,6 +32,7 @@ function Socket(namespace) {
 
 	this.fromRooms = new Set([tabUUID]);
 	this.toRooms = [];
+	this.flags = {};
 
 	this.typeListeners = {};
 
@@ -88,7 +89,6 @@ Socket.prototype.on = function (type, func) {
 
 Socket.prototype.to =
 Socket.prototype.in = function (room) {
-	this.toRooms = this.toRooms || [];
 	if (this.toRooms.indexOf(room) === -1) {
 		this.toRooms.push(room);
 	}
@@ -98,7 +98,7 @@ Socket.prototype.in = function (room) {
 Socket.prototype.emit = function (type, data) {
 	var message = {
 		namespace: this.namespace,
-		rooms: this.toRooms || [],
+		rooms: this.toRooms,
 		data: data,
 		senderid: tabUUID,
 		type: type,
@@ -108,19 +108,18 @@ Socket.prototype.emit = function (type, data) {
 	localStorage.setItem('tab-sockets', JSON.stringify(message));
 	localStorage.removeItem('tab-sockets');
 
-	if (!this.flags || !this.flags.broadcast) {
+	if (!this.flags.broadcast) {
 		this.getMessage(message);
 	}
 
 	// Reset all flags
-	delete this.flags;
-	delete this.toRooms;
+	this.flags = {};
+	this.toRooms = [];
 };
 
 // Goes through and defines the flag getters as flag setters
 flags.forEach(function (flag) {
 	Socket.prototype.__defineGetter__(flag, function () {
-		this.flags = this.flags || {};
 		this.flags[flag] = true;
 		return this;
 	});
