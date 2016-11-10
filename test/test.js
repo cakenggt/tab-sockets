@@ -40,20 +40,55 @@ describe('single tab socket', function () {
 			.close();
 	});
 	it('broadcast not received by sender', function () {
+		var hm = new Horseman();
+		return hm
+			.open(path)
+			.evaluate(function (done) {
+				var a = io();
+				a.on('test-action', function () {
+					done('Emitter is not supposed to receive broadcast!');
+				});
+				a.broadcast.emit('test-action');
+				setTimeout(function () {
+					done(null);
+				}, 50);
+			})
+			.close();
+	});
+	it('emit received by other socket on same tab', function () {
 		var rand = Math.random().toString();
 		var hm = new Horseman();
 		return hm
 			.open(path)
 			.evaluate(function (rand, done) {
 				var a = io();
-				a.on('test-action', function () {
-					done('Emitter is not supposed to receive broadcast!');
+				var b = io();
+				b.on('test-action', function (data) {
+					done(null, data);
+				});
+				a.emit('test-action', rand);
+			}, rand)
+			.then(function (r) {
+				expect(r).to.equal(rand);
+			})
+			.close();
+	});
+	it('broadcast received by other socket on same tab', function () {
+		var rand = Math.random().toString();
+		var hm = new Horseman();
+		return hm
+			.open(path)
+			.evaluate(function (rand, done) {
+				var a = io();
+				var b = io();
+				b.on('test-action', function (data) {
+					done(null, data);
 				});
 				a.broadcast.emit('test-action', rand);
-				setTimeout(function () {
-					done(null);
-				}, 50);
 			}, rand)
+			.then(function (r) {
+				expect(r).to.equal(rand);
+			})
 			.close();
 	});
 });

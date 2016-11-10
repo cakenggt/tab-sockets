@@ -28,6 +28,8 @@ The documentation below is similar to the documentation of [Socket.io](http://so
 
 Returns a socket which is linked to this namespace. Namespace is immutable for this socket. If no namespace is given, the socket listens to the default namespace. Only sockets specifically listening to a namespace will receive events from that namespace. All events emitted by this socket will go only to the declared namespace.
 
+A socket automatically joins the room equalling it's id when created.
+
 ### Socket
 
 #### .join(room)
@@ -40,7 +42,7 @@ Leaves a specific room. This will prevent the socket from receiving messages sen
 
 #### .on(type, fn)
 
-Registers a listener for a type of event. The callback function will be executed when an event is emitted of this type, giving the data of the event as the only argument to the callback.
+Registers a listener for a type of event. The callback function will be executed when an event is emitted of this type, giving the data of the event as the first argument to the callback and the id of the emitting socket as the second.
 
 #### .to(room)/.in(room)
 
@@ -48,11 +50,11 @@ Adds a room for the next emit to be sent to. These functions return the same obj
 
 #### .emit(eventType, [data])
 
-Emits a message of the specified type with the specified data attached. All of the sockets in the emitting tab will also receive this message if it is subscribed to the event type declared, and `.broadcast` was not enacted before emitting.
+Emits a message of the specified type with the specified data attached. All sockets, including the sender, will receive this emission as long as they fulfill the rules of namespaces and rooms.
 
 #### .broadcast
 
-This is a flag that you can set on the socket before you emit to prevent the sockets in the emitting tab from also receiving the message if they are subscribed to the event type of the emission. This flag returns the same object. Use the flag like this `socket.broadcast.emit('test-event-type', 'test');`
+This is a flag that you can set on the socket before you emit to prevent the emitting socket from also receiving the message. This flag returns the same socket object. Use the flag like this `socket.broadcast.emit('test-event-type', 'test');`
 
 
 ## Example Usage
@@ -73,11 +75,11 @@ socket.on('ping', function(data){
 socket
 .to('test room')
 .broadcast
-.emit('ping', 'other tabs get this message');
+.emit('ping', 'other sockets get this message');
 
 socket
 .to('test room')
-.emit('ping', 'the emitting tab will also get this message');
+.emit('ping', 'the emitting socket will also get this message');
 ```
 
 ## Contributing

@@ -3,6 +3,36 @@ const uuid = require('uuid');
 
 var tabUUID = uuid.v4();
 
+const socketsInTab = [];
+
+window.addEventListener('storage', event => {
+	var key = event.key;
+	if (event.newValue === null) {
+		// Value was removed
+		return;
+	}
+	var message = {};
+	try {
+		message = JSON.parse(event.newValue);
+	} catch (err) {
+		message = {
+			namespace: null,
+			rooms: [],
+			data: null,
+			tabId: null,
+			senderId: null,
+			type: null
+		};
+	}
+
+	// The emit method takes care of non-broadcasted messages
+	if (key === 'tab-sockets' && message.tabId !== tabUUID) {
+		for (var i = 0; i < socketsInTab.length; i++) {
+			socketsInTab[i].getMessage(message);
+		}
+	}
+});
+
 function storageAvailable(type) {
 	try {
 		var storage = window[type];
@@ -36,41 +66,21 @@ function Socket(namespace) {
 
 	this.typeListeners = {};
 
-	window.addEventListener('storage', event => {
-		var key = event.key;
-		if (event.newValue === null) {
-			// Value was removed
-			return;
-		}
-		var message = {};
-		try {
-			message = JSON.parse(event.newValue);
-		} catch (err) {
-			message = {
-				namespace: null,
-				rooms: [],
-				data: null,
-				senderid: null,
-				type: null
-			};
-		}
+	this.id = uuid.v4();
 
-		// The emit method takes care of non-broadcasted messages
-		if (key === 'tab-sockets' && message.senderid !== tabUUID) {
-			this.getMessage(message);
-		}
-	});
+	this.join(this.id);
 }
 
 Socket.prototype.getMessage = function (message) {
-	if ((!message.namespace || message.namespace === this.namespace) &&
+	if (
+		(!message.namespace || message.namespace === this.namespace) &&
 		(
 			message.rooms.length === 0 ||
 			message.rooms.filter(elem => {
 				return this.fromRooms.has(elem);
 			}).length > 0
 		) &&
-		(this.typeListeners[message.type])) {
+		this.typeListeners[message.type]) {
 		this.typeListeners[message.type](message.data, message.senderid);
 	}
 };
@@ -100,7 +110,8 @@ Socket.prototype.emit = function (type, data) {
 		namespace: this.namespace,
 		rooms: this.toRooms,
 		data: data,
-		senderid: tabUUID,
+		tabId: tabUUID,
+		senderid: this.id,
 		type: type,
 		nonce: uuid.v4()
 	};
@@ -108,8 +119,11 @@ Socket.prototype.emit = function (type, data) {
 	localStorage.setItem('tab-sockets', JSON.stringify(message));
 	localStorage.removeItem('tab-sockets');
 
-	if (!this.flags.broadcast) {
-		this.getMessage(message);
+	for (var i = 0; i < socketsInTab.length; i++) {
+		var socket = socketsInTab[i];
+		if (this.id !== socket.id || !this.flags.broadcast) {
+			socket.getMessage(message);
+		}
 	}
 
 	// Reset all flags
@@ -126,5 +140,7 @@ flags.forEach(function (flag) {
 });
 
 module.exports = function (namespace) {
-	return new Socket(namespace);
+	var socket = new Socket(namespace);
+	socketsInTab.push(socket);
+	return socket;
 };
